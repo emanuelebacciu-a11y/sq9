@@ -3158,33 +3158,15 @@ function scheduleSync() {
   // auto-sync disabled
 }
 
-// ── COMPRESSIONE LZ inline (nessuna dipendenza esterna) ──────────────────
-// Riduce il payload del 60-80% prima di metterlo nella query string JSONP.
+// ── COMPRESSIONE: JSON → base64 semplice (affidabile, nessun LZ rotto) ──
 window.LZ = (function(){
   function compress(s) {
     if(!s) return '';
-    const d={};let ds=3,dc=256,o=[],w='',c,wc,i;
-    for(i=0;i<s.length;i++){
-      c=s[i];wc=w+c;
-      if(d[wc]!=null){w=wc;}
-      else{o.push(w.length>1?d[w]:w.charCodeAt(0));d[wc]=dc++;w=c;}
-    }
-    o.push(w.length>1?d[w]:w.charCodeAt(0));
-    return btoa(String.fromCharCode(...o.map(x=>x&0xFF))).replace(/=+$/,'');
+    try { return btoa(unescape(encodeURIComponent(s))); } catch(_){ return btoa(s); }
   }
   function decompress(s) {
     if(!s) return '';
-    try {
-      const b=atob(s);
-      const arr=Array.from(b).map(c=>c.charCodeAt(0));
-      const d={};let ds=256,w=String.fromCharCode(arr[0]),o=w,c,entry;
-      for(let i=1;i<arr.length;i++){
-        const k=arr[i];
-        entry=d[k]!=null?d[k]:(k<256?String.fromCharCode(k):w+w[0]);
-        o+=entry;d[ds++]=w+entry[0];w=entry;
-      }
-      return o;
-    } catch(_){ return ''; }
+    try { return decodeURIComponent(escape(atob(s))); } catch(_){ return ''; }
   }
   return {compress,decompress};
 })();
