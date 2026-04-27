@@ -3153,6 +3153,7 @@ function buildPayload() {
 
 function scheduleSync() {
   if(!getSheetsUrl()) return;
+  if(!localStorage.getItem('sq9v2_pages')) return;
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(()=>{ syncToSheets(); }, 3000);
 }
