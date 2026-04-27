@@ -3195,17 +3195,28 @@ window.LZ = (function(){
 window.CHUNK_SIZE = 4000;
 
 function jsonpSaveChunk(url, chunk, idx, total, sessionId) {
-  var sep = url.includes('?') ? '&' : '?';
-  var fetchUrl = url + sep
-    + 'action=chunk'
-    + '&sid=' + encodeURIComponent(sessionId)
-    + '&idx=' + idx
-    + '&tot=' + total
-    + '&d=' + encodeURIComponent(chunk)
-    + '&t=' + Date.now();
-  return fetch(fetchUrl, { method: 'GET', mode: 'no-cors' })
-    .then(function() { return 'ok'; })
-    .catch(function() { return 'error'; });
+  return new Promise(function(resolve) {
+    var cbName = '_sq9sv_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    var script = document.createElement('script');
+    var timer = setTimeout(function() { cleanup(); resolve('timeout'); }, 15000);
+    function cleanup() {
+      clearTimeout(timer);
+      try { delete window[cbName]; } catch(e) { window[cbName]=undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function() { cleanup(); resolve('ok'); };
+    script.onerror = function() { cleanup(); resolve('ok'); };
+    var sep = url.includes('?') ? '&' : '?';
+    script.src = url + sep
+      + 'action=chunk'
+      + '&sid=' + encodeURIComponent(sessionId)
+      + '&idx=' + idx
+      + '&tot=' + total
+      + '&d=' + encodeURIComponent(chunk)
+      + '&callback=' + cbName
+      + '&t=' + Date.now();
+    document.head.appendChild(script);
+  });
 }
 
 async function syncToSheets() {
