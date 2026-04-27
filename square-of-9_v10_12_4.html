@@ -467,9 +467,8 @@ html,body{margin:0;padding:0;background:#0f0f13;color:#f0f0f0;font-family:-apple
       <div id="syncDot" style="width:7px;height:7px;border-radius:50%;background:#333;transition:background .3s;"></div>
       <span id="syncLabel">—</span>
     </div>
-    <button class="bkp-btn" onclick="testConnection()" style="border-color:#333;color:#666;">🔍</button>
-    <button class="bkp-btn" onclick="manualRestore()" style="border-color:#2a3a5a;color:#6fa3e0;">📂 Ripristina</button>
-    <button class="bkp-btn export" onclick="forceSyncToSheets()"><span class="bkp-icon">☁️</span> Sync</button>
+    <button class="bkp-btn" onclick="manualRestore()" style="border-color:#2a3a5a;color:#6fa3e0;">📂</button>
+    <button class="bkp-btn export" onclick="forceSyncToSheets()">☁️</button>
   </div>
   <div class="pages-wrap" id="pagesWrap"></div>
 </div>
@@ -3155,7 +3154,7 @@ function buildPayload() {
 function scheduleSync() {
   if(!getSheetsUrl()) return;
   clearTimeout(_syncTimer);
-  // auto-sync disabled
+  _syncTimer = setTimeout(()=>{ syncToSheets(); }, 3000);
 }
 
 // ── COMPRESSIONE: JSON → base64 semplice (affidabile, nessun LZ rotto) ──
