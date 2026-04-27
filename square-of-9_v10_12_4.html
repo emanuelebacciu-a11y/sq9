@@ -3195,28 +3195,18 @@ window.LZ = (function(){
 window.CHUNK_SIZE = 4000;
 
 function jsonpSaveChunk(url, chunk, idx, total, sessionId) {
-  return new Promise(function(resolve) {
-    var cbName = '_sq9sv_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    var script = document.createElement('script');
-    var timer = setTimeout(function() { cleanup(); resolve('timeout'); }, 15000);
-    function cleanup() {
-      clearTimeout(timer);
-      try { delete window[cbName]; } catch(e) { window[cbName]=undefined; }
-      if(script.parentNode) script.parentNode.removeChild(script);
-    }
-    window[cbName] = function() { cleanup(); resolve('ok'); };
-    script.onerror = function() { cleanup(); resolve('ok'); };
-    var sep = url.includes('?') ? '&' : '?';
-    script.src = url + sep
-      + 'action=chunk'
-      + '&sid=' + encodeURIComponent(sessionId)
-      + '&idx=' + idx
-      + '&tot=' + total
-      + '&d=' + encodeURIComponent(chunk)
-      + '&callback=' + cbName
-      + '&t=' + Date.now();
-    document.head.appendChild(script);
-  });
+  var sep = url.includes('?') ? '&' : '?';
+  var fetchUrl = url + sep
+    + 'action=chunk'
+    + '&sid=' + encodeURIComponent(sessionId)
+    + '&idx=' + idx
+    + '&tot=' + total
+    + '&d=' + encodeURIComponent(chunk)
+    + '&t=' + Date.now();
+  return fetch(fetchUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(d) { return d.ok ? 'ok' : 'error'; })
+    .catch(function() { return 'error'; });
 }
 
 async function syncToSheets() {
@@ -3241,30 +3231,9 @@ function forceSyncToSheets() { syncToSheets(); }
 
 // ── LETTURA via JSONP GET (unico modo per leggere la risposta cross-origin su Safari) ──
 function jsonpGet(url) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_sq9cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    const script = document.createElement('script');
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('JSONP timeout'));
-    }, 12000);
-    function cleanup() {
-      clearTimeout(timer);
-      try { delete window[cbName]; } catch(e) { window[cbName] = undefined; }
-      if(script.parentNode) script.parentNode.removeChild(script);
-    }
-    window[cbName] = function(data) {
-      cleanup();
-      resolve(typeof data === 'string' ? data : JSON.stringify(data));
-    };
-    script.onerror = function() {
-      cleanup();
-      reject(new Error('JSONP script load failed'));
-    };
-    const sep = url.includes('?') ? '&' : '?';
-    script.src = url + sep + 'callback=' + cbName + '&t=' + Date.now();
-    document.head.appendChild(script);
-  });
+  return fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(d) { return JSON.stringify(d); });
 }
 
 async function restoreFromSheets() {
