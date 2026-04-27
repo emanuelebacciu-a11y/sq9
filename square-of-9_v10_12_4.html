@@ -3215,16 +3215,22 @@ async function syncToSheets() {
   setSyncStatus('sync', 'Salvataggio...');
   const payload = buildPayload();
   const compressed = LZ.compress(payload);
-  const chunks = [];
-  for(let i=0; i<compressed.length; i+=CHUNK_SIZE) {
-    chunks.push(compressed.slice(i, i+CHUNK_SIZE));
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ c: compressed })
+    });
+    const d = await r.json();
+    if(d.ok) {
+      setSyncStatus('ok', 'Salvato ✓');
+      setTimeout(()=>setSyncStatus('idle','☁️ Sheets'), 3000);
+    } else {
+      setSyncStatus('error', 'Errore');
+    }
+  } catch(e) {
+    setSyncStatus('error', 'Errore rete');
   }
-  const sessionId = Date.now().toString(36);
-  for(let i=0; i<chunks.length; i++) {
-    await jsonpSaveChunk(url, chunks[i], i, chunks.length, sessionId);
-  }
-  setSyncStatus('ok', 'Salvato ✓');
-  setTimeout(()=>setSyncStatus('idle','☁️ Sheets'), 3000);
 }
 
 function forceSyncToSheets() { syncToSheets(); }
