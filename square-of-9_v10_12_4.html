@@ -3155,7 +3155,7 @@ function buildPayload() {
 function scheduleSync() {
   if(!getSheetsUrl()) return;
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(()=>{ syncToSheets(); }, 1500);
+  // auto-sync disabled
 }
 
 // ── COMPRESSIONE LZ inline (nessuna dipendenza esterna) ──────────────────
