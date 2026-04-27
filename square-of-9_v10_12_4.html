@@ -3113,8 +3113,8 @@ function updateCicli(pgId, subId){
 }
 
 // ── GOOGLE SHEETS SYNC ─────────────────────────────────────────────────────
-const SHEETS_URL_KEY = 'sq9_sheets_url';
-const SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwo_knphltprHOweLhyLdeckZJyirV3nEIykSSli3T6XfFmf1NqEVdQdj9SfLLxaS8U/exec';
+window.SHEETS_URL_KEY = 'sq9_sheets_url';
+window.SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwo_knphltprHOweLhyLdeckZJyirV3nEIykSSli3T6XfFmf1NqEVdQdj9SfLLxaS8U/exec';
 let _syncTimer = null;
 
 function getSheetsUrl() {
@@ -3192,7 +3192,7 @@ window.LZ = (function(){
 // ── SALVATAGGIO via JSONP GET chunked ────────────────────────────────────
 // Divide il payload in chunk da 4000 char (safe per tutti i browser/server).
 // GAS riassembla i chunk e salva su Drive.
-const CHUNK_SIZE = 4000;
+window.CHUNK_SIZE = 4000;
 
 function jsonpSaveChunk(url, chunk, idx, total, sessionId) {
   var sep = url.includes('?') ? '&' : '?';
